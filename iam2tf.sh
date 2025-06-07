@@ -18,12 +18,12 @@ preflight_checks() {
   done
 }
 
-##
-## Text filters
-##
-
 _sanitize() {
-  awk '{
+  # Converts AWS resource names (which may use camelCase or contain special characters)
+  # into valid Terraform resource identifiers that follow snake_case naming conventions.
+  #
+  awk '
+  {
     # Insert _ before uppercase letters (for camelCase)
     for (i = length($0); i > 1; i--) {
       if (substr($0, i, 1) ~ /[A-Z]/) {
@@ -50,26 +50,9 @@ _sanitize() {
     gsub(/[^a-z0-9]+/, "_")
 
     print
-  }'
+  }
+  '
 }
-
-_filter_role_names() { jq -r '.Roles[] | select(.Path == "/") | .RoleName'; }
-
-_filter_policy_arns() { jq -r '.Policies[] | select(.Path == "/") | .Arn'; }
-
-_filter_default_version_id() { jq -r '.Policy.DefaultVersionId'; }
-
-_filter_policy_version_document() { jq -r '.PolicyVersion.Document'; }
-
-_filter_assume_role_policy_document() { jq -r '.Role.AssumeRolePolicyDocument'; }
-
-_filter_policy_names() { jq -r '.PolicyNames[]'; }
-
-_filter_policy_document() { jq -r '.PolicyDocument'; }
-
-_filter_attached_policy_arns() { jq -r '.AttachedPolicies[].PolicyArn'; }
-
-_filter_policy_name() { grep -o '[^/]*$'; }
 
 ##
 ## AWS CLI Wrappers
@@ -90,6 +73,28 @@ _list_policies() { aws iam list-policies --scope Local; }
 _get_policy_by_policy_arn() { aws iam get-policy --policy-arn "$1"; }
 
 _get_policy_version_by_policy_arn_and_version_id() { aws iam get-policy-version --policy-arn "$1" --version-id "$2"; }
+
+##
+## JQ filters
+##
+
+_filter_role_names() { jq -r '.Roles[] | select(.Path == "/") | .RoleName'; }
+
+_filter_policy_arns() { jq -r '.Policies[] | select(.Path == "/") | .Arn'; }
+
+_filter_default_version_id() { jq -r '.Policy.DefaultVersionId'; }
+
+_filter_policy_version_document() { jq -r '.PolicyVersion.Document'; }
+
+_filter_assume_role_policy_document() { jq -r '.Role.AssumeRolePolicyDocument'; }
+
+_filter_policy_names() { jq -r '.PolicyNames[]'; }
+
+_filter_policy_document() { jq -r '.PolicyDocument'; }
+
+_filter_attached_policy_arns() { jq -r '.AttachedPolicies[].PolicyArn'; }
+
+_filter_policy_name() { grep -o '[^/]*$'; }
 
 ##
 ## HCL generation functions
