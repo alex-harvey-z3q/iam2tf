@@ -23,6 +23,12 @@ Requires:
 bash iam2tf.sh > iam.tf
 ```
 
+To add a prefix and specify a separator:
+
+```bash
+bash iam2tf.sh -n SomePrefix -s"-" > iam.tf
+```
+
 ## Output
 
 The script generates Terraform HCL code to stdout.
@@ -38,7 +44,6 @@ The script generates Terraform HCL code to stdout.
 - Only processes roles and policies in the root path (`/`)
 - Does not handle AWS managed policies (only locally scoped policies)
 - Does not generate Terraform import statements (you'll need to import existing resources manually if needed)
-- Assumes the default AWS region is `ap-southeast-2` (can be modified in the script)
 
 ## License
 
