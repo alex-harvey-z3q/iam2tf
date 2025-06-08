@@ -8,132 +8,132 @@ oneTimeSetUp() {
 }
 
 test_camelCase_conversion() {
-  result="$(echo "camelCase" | _sanitize)"
+  result="$(_sanitize <<< "camelCase")"
   assertEquals "camel_case" "$result"
 }
 
 test_PascalCase_conversion() {
-  result="$(echo "PascalCase" | _sanitize)"
+  result="$(_sanitize <<< "PascalCase")"
   assertEquals "pascal_case" "$result"
 }
 
 test_multipleCamelCase() {
-  result="$(echo "thisIsALongCamelCaseString" | _sanitize)"
+  result="$(_sanitize <<< "thisIsALongCamelCaseString")"
   assertEquals "this_is_a_long_camel_case_string" "$result"
 }
 
 test_consecutiveUppercase() {
-  result="$(echo "XMLParser" | _sanitize)"
+  result="$(_sanitize <<< "XMLParser")"
   assertEquals "xml_parser" "$result"
 }
 
 test_acronymInCamelCase() {
-  result="$(echo "parseHTMLContent" | _sanitize)"
+  result="$(_sanitize <<< "parseHTMLContent")"
   assertEquals "parse_html_content" "$result"
 }
 
 test_uppercase_to_lowercase() {
-  result="$(echo "UPPERCASE" | _sanitize)"
+  result="$(_sanitize <<< "UPPERCASE")"
   assertEquals "uppercase" "$result"
 }
 
 test_mixedCase_to_lowercase() {
-  result="$(echo "MiXeD cAsE" | _sanitize)"
+  result="$(_sanitize <<< "MiXeD cAsE")"
   assertEquals "mi_xe_d_c_as_e" "$result"
 }
 
 test_spaces_replaced() {
-  result="$(echo "hello world" | _sanitize)"
+  result="$(_sanitize <<< "hello world")"
   assertEquals "hello_world" "$result"
 }
 
 test_hyphens_replaced() {
-  result="$(echo "hello-world-test" | _sanitize)"
+  result="$(_sanitize <<< "hello-world-test")"
   assertEquals "hello_world_test" "$result"
 }
 
 test_dots_replaced() {
-  result="$(echo "file.name.txt" | _sanitize)"
+  result="$(_sanitize <<< "file.name.txt")"
   assertEquals "file_name_txt" "$result"
 }
 
 test_multiple_special_chars() {
-  result="$(echo "hello@#$%world!" | _sanitize)"
+  result="$(_sanitize <<< "hello@#$%world!")"
   assertEquals "hello_world_" "$result"
 }
 
 test_consecutive_special_chars() {
-  result="$(echo "hello---world" | _sanitize)"
+  result="$(_sanitize <<< "hello---world")"
   assertEquals "hello_world" "$result"
 }
 
 test_mixed_separators() {
-  result="$(echo "hello world-test.file" | _sanitize)"
+  result="$(_sanitize <<< "hello world-test.file")"
   assertEquals "hello_world_test_file" "$result"
 }
 
 test_numbers_preserved() {
-  result="$(echo "test123" | _sanitize)"
+  result="$(_sanitize <<< "test123")"
   assertEquals "test123" "$result"
 }
 
 test_numbers_with_camelCase() {
-  result="$(echo "test123CamelCase" | _sanitize)"
+  result="$(_sanitize <<< "test123CamelCase")"
   assertEquals "test123_camel_case" "$result"
 }
 
 test_numbers_with_special_chars() {
-  result="$(echo "test-123-file" | _sanitize)"
+  result="$(_sanitize <<< "test-123-file")"
   assertEquals "test_123_file" "$result"
 }
 
 test_empty_string() {
-  result="$(echo "" | _sanitize)"
+  result="$(_sanitize <<< "")"
   assertEquals "" "$result"
 }
 
 test_single_character() {
-  result="$(echo "a" | _sanitize)"
+  result="$(_sanitize <<< "a")"
   assertEquals "a" "$result"
 }
 
 test_single_uppercase() {
-  result="$(echo "A" | _sanitize)"
+  result="$(_sanitize <<< "A")"
   assertEquals "a" "$result"
 }
 
 test_only_special_chars() {
-  result="$(echo "@#$%^&*()" | _sanitize)"
+  result="$(_sanitize <<< "@#$%^&*()")"
   assertEquals "_" "$result"
 }
 
 test_only_underscores() {
-  result="$(echo "___" | _sanitize)"
+  result="$(_sanitize <<< "___")"
   assertEquals "_" "$result"
 }
 
 test_leading_uppercase() {
-  result="$(echo "UpperCase" | _sanitize)"
+  result="$(_sanitize <<< "UpperCase")"
   assertEquals "upper_case" "$result"
 }
 
 test_trailing_special_chars() {
-  result="$(echo "test!!!" | _sanitize)"
+  result="$(_sanitize <<< "test!!!")"
   assertEquals "test_" "$result"
 }
 
 test_leading_special_chars() {
-  result="$(echo "!!!test" | _sanitize)"
+  result="$(_sanitize <<< "!!!test")"
   assertEquals "_test" "$result"
 }
 
 test_variable_name() {
-  result="$(echo "myVariableName" | _sanitize)"
+  result="$(_sanitize <<< "myVariableName")"
   assertEquals "my_variable_name" "$result"
 }
 
 test_class_name() {
-  result="$(echo "MyHTTPClientClass" | _sanitize)"
+  result="$(_sanitize <<< "MyHTTPClientClass")"
   assertEquals "my_http_client_class" "$result"
 }
 
