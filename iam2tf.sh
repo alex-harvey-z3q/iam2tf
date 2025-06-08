@@ -49,6 +49,9 @@ _sanitize() {
     # Replace non-alphanumerics with _
     gsub(/[^a-z0-9]+/, "_")
 
+    # Remove leading and trailing underscores
+    gsub(/^_+|_+$/, "")
+
     print
   }
   '

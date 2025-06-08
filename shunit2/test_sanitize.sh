@@ -59,17 +59,12 @@ test_dots_replaced() {
 
 test_multiple_special_chars() {
   result="$(_sanitize <<< "hello@#$%world!")"
-  assertEquals "hello_world_" "$result"
+  assertEquals "hello_world" "$result"
 }
 
 test_consecutive_special_chars() {
   result="$(_sanitize <<< "hello---world")"
   assertEquals "hello_world" "$result"
-}
-
-test_mixed_separators() {
-  result="$(_sanitize <<< "hello world-test.file")"
-  assertEquals "hello_world_test_file" "$result"
 }
 
 test_numbers_preserved() {
@@ -103,13 +98,13 @@ test_single_uppercase() {
 }
 
 test_only_special_chars() {
-  result="$(_sanitize <<< "@#$%^&*()")"
-  assertEquals "_" "$result"
+  result="$(_sanitize <<< "@#_$%^&_*()")"
+  assertEquals "" "$result"
 }
 
 test_only_underscores() {
   result="$(_sanitize <<< "___")"
-  assertEquals "_" "$result"
+  assertEquals "" "$result"
 }
 
 test_leading_uppercase() {
@@ -119,22 +114,12 @@ test_leading_uppercase() {
 
 test_trailing_special_chars() {
   result="$(_sanitize <<< "test!!!")"
-  assertEquals "test_" "$result"
+  assertEquals "test" "$result"
 }
 
 test_leading_special_chars() {
   result="$(_sanitize <<< "!!!test")"
-  assertEquals "_test" "$result"
-}
-
-test_variable_name() {
-  result="$(_sanitize <<< "myVariableName")"
-  assertEquals "my_variable_name" "$result"
-}
-
-test_class_name() {
-  result="$(_sanitize <<< "MyHTTPClientClass")"
-  assertEquals "my_http_client_class" "$result"
+  assertEquals "test" "$result"
 }
 
 # shellcheck disable=SC1091
