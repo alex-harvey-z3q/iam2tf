@@ -28,7 +28,7 @@ _sanitise() {
     for (i = length($0); i > 1; i--) {
       if (substr($0, i, 1) ~ /[A-Z]/) {
 
-        # But also handle strings like XMLParser differently
+        # But also handle strings like "XMLParser" differently
         prev_is_upper = (i > 1 && substr($0, i-1, 1) ~ /[A-Z]/)
 
         # Check if next char is lowercase
@@ -78,8 +78,10 @@ _get_policy_by_policy_arn() { aws iam get-policy --policy-arn "$1"; }
 _get_policy_version_by_policy_arn_and_version_id() { aws iam get-policy-version --policy-arn "$1" --version-id "$2"; }
 
 ##
-## JQ filters
+## Text filters
 ##
+
+_space() { cat; echo; }  # Add one blank line at the end of STDIN.
 
 _filter_role_names() { jq -r '.Roles[] | select(.Path == "/") | .RoleName'; }
 
@@ -109,9 +111,9 @@ _generate_role_hcl() {
   local role_name="$1"
   local sanitised_role_name="$2"
 
-  _get_role_by_role_name "$role_name" | _filter_assume_role_policy_document | _policy_to_hcl "$sanitised_role_name"
+  _get_role_by_role_name "$role_name" | _filter_assume_role_policy_document | _policy_to_hcl "$sanitised_role_name" | _space
 
-  cat <<-EOF
+  _space <<-EOF
 		resource "aws_iam_role" "$sanitised_role_name" {
 		  name               = "$role_name"
 		  assume_role_policy = data.aws_iam_policy_document.$sanitised_role_name.json
@@ -127,9 +129,9 @@ _generate_role_policy_hcl() {
   local sanitised_policy_name
   sanitised_policy_name="$sanitised_role_name"__"$(_sanitise <<< "$policy_name")"
 
-  _get_role_policy_by_role_name_and_policy_name "$role_name" "$policy_name" | _filter_policy_document | _policy_to_hcl "$sanitised_policy_name"
+  _get_role_policy_by_role_name_and_policy_name "$role_name" "$policy_name" | _filter_policy_document | _policy_to_hcl "$sanitised_policy_name" | _space
 
-  cat <<-EOF
+  _space <<-EOF
 		resource "aws_iam_role_policy" "$sanitised_policy_name" {
 		  name   = "$policy_name"
 		  policy = data.aws_iam_policy_document.$sanitised_policy_name.json
@@ -148,7 +150,7 @@ _generate_role_policy_attachment_hcl() {
   local sanitised_policy_attachment_name
   sanitised_policy_attachment_name="$sanitised_role_name"__"$(_sanitise <<< "$policy_name")"__attachment
 
-  cat <<-EOF
+  _space <<-EOF
 		resource "aws_iam_role_policy_attachment" "$sanitised_policy_attachment_name" {
 		  role       = aws_iam_role.$sanitised_role_name.name
 		  policy_arn = "$policy_arn"
@@ -168,9 +170,9 @@ _generate_policy_hcl() {
   local version_id
   version_id="$(_get_policy_by_policy_arn "$policy_arn" | _filter_default_version_id)"
 
-  _get_policy_version_by_policy_arn_and_version_id "$policy_arn" "$version_id" | _filter_policy_version_document | _policy_to_hcl "$sanitised_policy_name"
+  _get_policy_version_by_policy_arn_and_version_id "$policy_arn" "$version_id" | _filter_policy_version_document | _policy_to_hcl "$sanitised_policy_name" | _space
 
-  cat <<-EOF
+  _space <<-EOF
 		resource "aws_iam_policy" "$sanitised_policy_name" {
 		  name   = "$policy_name"
 		  policy = data.aws_iam_policy_document.$sanitised_policy_name.json
