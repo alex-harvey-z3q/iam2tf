@@ -18,7 +18,7 @@ preflight_checks() {
   done
 }
 
-_sanitize() {
+_sanitise() {
   # Converts AWS resource names (which may use camelCase or contain special characters)
   # into valid Terraform resource identifiers that follow snake_case naming conventions.
   #
@@ -107,50 +107,50 @@ _policy_to_hcl() { iam-policy-json-to-terraform -name "$1"; }
 
 _generate_role_hcl() {
   local role_name="$1"
-  local sanitized_role_name="$2"
+  local sanitised_role_name="$2"
 
-  _get_role_by_role_name "$role_name" | _filter_assume_role_policy_document | _policy_to_hcl "$sanitized_role_name"
+  _get_role_by_role_name "$role_name" | _filter_assume_role_policy_document | _policy_to_hcl "$sanitised_role_name"
 
   cat <<-EOF
-		resource "aws_iam_role" "$sanitized_role_name" {
+		resource "aws_iam_role" "$sanitised_role_name" {
 		  name               = "$role_name"
-		  assume_role_policy = data.aws_iam_policy_document.$sanitized_role_name.json
+		  assume_role_policy = data.aws_iam_policy_document.$sanitised_role_name.json
 		}
 	EOF
 }
 
 _generate_role_policy_hcl() {
   local role_name="$1"
-  local sanitized_role_name="$2"
+  local sanitised_role_name="$2"
   local policy_name="$3"
 
-  local sanitized_policy_name
-  sanitized_policy_name="$sanitized_role_name"__"$(_sanitize <<< "$policy_name")"
+  local sanitised_policy_name
+  sanitised_policy_name="$sanitised_role_name"__"$(_sanitise <<< "$policy_name")"
 
-  _get_role_policy_by_role_name_and_policy_name "$role_name" "$policy_name" | _filter_policy_document | _policy_to_hcl "$sanitized_policy_name"
+  _get_role_policy_by_role_name_and_policy_name "$role_name" "$policy_name" | _filter_policy_document | _policy_to_hcl "$sanitised_policy_name"
 
   cat <<-EOF
-		resource "aws_iam_role_policy" "$sanitized_policy_name" {
+		resource "aws_iam_role_policy" "$sanitised_policy_name" {
 		  name   = "$policy_name"
-		  policy = data.aws_iam_policy_document.$sanitized_policy_name.json
-		  role   = aws_iam_role.$sanitized_role_name.id
+		  policy = data.aws_iam_policy_document.$sanitised_policy_name.json
+		  role   = aws_iam_role.$sanitised_role_name.id
 		}
 	EOF
 }
 
 _generate_role_policy_attachment_hcl() {
   local policy_arn="$1"
-  local sanitized_role_name="$2"
+  local sanitised_role_name="$2"
 
   local policy_name
   policy_name="$(_filter_policy_name <<< "$policy_arn")"
 
-  local sanitized_policy_attachment_name
-  sanitized_policy_attachment_name="$sanitized_role_name"__"$(_sanitize <<< "$policy_name")"__attachment
+  local sanitised_policy_attachment_name
+  sanitised_policy_attachment_name="$sanitised_role_name"__"$(_sanitise <<< "$policy_name")"__attachment
 
   cat <<-EOF
-		resource "aws_iam_role_policy_attachment" "$sanitized_policy_attachment_name" {
-		  role       = aws_iam_role.$sanitized_role_name.name
+		resource "aws_iam_role_policy_attachment" "$sanitised_policy_attachment_name" {
+		  role       = aws_iam_role.$sanitised_role_name.name
 		  policy_arn = "$policy_arn"
 		}
 	EOF
@@ -162,49 +162,49 @@ _generate_policy_hcl() {
   local policy_name
   policy_name="$(_filter_policy_name <<< "$policy_arn")"
 
-  local sanitized_policy_name
-  sanitized_policy_name="$(_sanitize <<< "$policy_name")"
+  local sanitised_policy_name
+  sanitised_policy_name="$(_sanitise <<< "$policy_name")"
 
   local version_id
   version_id="$(_get_policy_by_policy_arn "$policy_arn" | _filter_default_version_id)"
 
-  _get_policy_version_by_policy_arn_and_version_id "$policy_arn" "$version_id" | _filter_policy_version_document | _policy_to_hcl "$sanitized_policy_name"
+  _get_policy_version_by_policy_arn_and_version_id "$policy_arn" "$version_id" | _filter_policy_version_document | _policy_to_hcl "$sanitised_policy_name"
 
   cat <<-EOF
-		resource "aws_iam_policy" "$sanitized_policy_name" {
+		resource "aws_iam_policy" "$sanitised_policy_name" {
 		  name   = "$policy_name"
-		  policy = data.aws_iam_policy_document.$sanitized_policy_name.json
+		  policy = data.aws_iam_policy_document.$sanitised_policy_name.json
 		}
 	EOF
 }
 
 _generate_role_policies() {
   local role_name="$1"
-  local sanitized_role_name="$2"
+  local sanitised_role_name="$2"
   local policy_name
   while read -r policy_name; do
-    _generate_role_policy_hcl "$role_name" "$sanitized_role_name" "$policy_name"
+    _generate_role_policy_hcl "$role_name" "$sanitised_role_name" "$policy_name"
   done < <(_list_role_policies_by_role_name "$role_name" | _filter_policy_names)
 }
 
 _generate_role_policy_attachments() {
   local role_name="$1"
-  local sanitized_role_name="$2"
+  local sanitised_role_name="$2"
   local policy_arn
   while read -r policy_arn; do
-    _generate_role_policy_attachment_hcl "$policy_arn" "$sanitized_role_name"
+    _generate_role_policy_attachment_hcl "$policy_arn" "$sanitised_role_name"
   done < <(_list_attached_role_policies_by_role_name "$role_name" | _filter_attached_policy_arns)
 }
 
 generate_roles() {
   local role_name
-  local sanitized_role_name
+  local sanitised_role_name
 
   while read -r role_name; do
-    sanitized_role_name="$(_sanitize <<< "$role_name")"
-    _generate_role_hcl      "$role_name" "$sanitized_role_name"
-    _generate_role_policies "$role_name" "$sanitized_role_name"
-    _generate_role_policy_attachments "$role_name" "$sanitized_role_name"
+    sanitised_role_name="$(_sanitise <<< "$role_name")"
+    _generate_role_hcl      "$role_name" "$sanitised_role_name"
+    _generate_role_policies "$role_name" "$sanitised_role_name"
+    _generate_role_policy_attachments "$role_name" "$sanitised_role_name"
   done < <(_list_roles | _filter_role_names)
 }
 
